@@ -1,4 +1,5 @@
 ﻿using RAIN.Navigation.Graph;
+using System;
 
 namespace Assets.Scripts.IAJ.Unity.Pathfinding.Heuristics
 {
@@ -6,7 +7,8 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Heuristics
     {
         public float H(NavigationGraphNode node, NavigationGraphNode goalNode)
         {
-            return (goalNode.LocalPosition - node.LocalPosition).magnitude;
+            return (float)Math.Sqrt(Math.Pow(goalNode.LocalPosition.x - node.LocalPosition.x, 2.0) +
+                                Math.Pow(goalNode.LocalPosition.y - node.LocalPosition.y, 2.0));
         }
     }
 }

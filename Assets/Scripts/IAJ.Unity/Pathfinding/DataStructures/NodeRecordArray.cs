@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using RAIN.Navigation.Graph;
 
 namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
@@ -13,12 +12,13 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
 
         public NodeRecordArray(List<NavigationGraphNode> nodes)
         {
+            //this method creates and initializes the NodeRecordArray for all nodes in the Navigation Graph
             this.NodeRecords = new NodeRecord[nodes.Count];
             
             for(int i = 0; i < nodes.Count; i++)
             {
                 var node = nodes[i];
-                node.NodeIndex = i;
+                node.NodeIndex = i; //we're setting the node Index because RAIN does not do this automatically
                 this.NodeRecords[i] = new NodeRecord {node = node, status = NodeStatus.Unvisited};
             }
 
@@ -29,6 +29,8 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
 
         public NodeRecord GetNodeRecord(NavigationGraphNode node)
         {
+            //do not change this method
+            //here we have the "special case" node handling
             if (node.NodeIndex == -1)
             {
                 for (int i = 0; i < this.SpecialCaseNodes.Count; i++)
@@ -63,62 +65,57 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
             this.SpecialCaseNodes.Clear();
         }
 
-        void IClosedSet.Initialize()
-        {
-        }
-
         public void AddToOpen(NodeRecord nodeRecord)
         {
-            //TODO implement
-            throw new NotImplementedException();
+            this.Open.AddToOpen(nodeRecord);
+            this.NodeRecords[nodeRecord.node.NodeIndex].status = NodeStatus.Open;
         }
 
         public void AddToClosed(NodeRecord nodeRecord)
         {
-            //TODO implement
-            throw new NotImplementedException();
+            this.NodeRecords[nodeRecord.node.NodeIndex].status = NodeStatus.Closed;
         }
 
         public NodeRecord SearchInOpen(NodeRecord nodeRecord)
         {
-            //TODO implement
-            throw new NotImplementedException();
+            if (this.NodeRecords[nodeRecord.node.NodeIndex].status == NodeStatus.Open)
+                return this.NodeRecords[nodeRecord.node.NodeIndex];
+            else return null;
         }
 
         public NodeRecord SearchInClosed(NodeRecord nodeRecord)
         {
-            //TODO implement
-            throw new NotImplementedException();
+            if (this.NodeRecords[nodeRecord.node.NodeIndex].status == NodeStatus.Closed)
+                return this.NodeRecords[nodeRecord.node.NodeIndex];
+            else return null;
         }
 
         public NodeRecord GetBestAndRemove()
         {
-            //TODO implement
-            throw new NotImplementedException();
+            NodeRecord node = Open.GetBestAndRemove();
+            this.NodeRecords[node.node.NodeIndex].status = NodeStatus.Closed;
+            return node;
         }
 
         public NodeRecord PeekBest()
         {
-            //TODO implement
-            throw new NotImplementedException();
+            return this.Open.PeekBest();
         }
 
         public void Replace(NodeRecord nodeToBeReplaced, NodeRecord nodeToReplace)
         {
-            //TODO implement
-            throw new NotImplementedException();
+            this.Open.Replace(nodeToBeReplaced, nodeToReplace);
         }
 
         public void RemoveFromOpen(NodeRecord nodeRecord)
         {
-            //TODO implement
-            throw new NotImplementedException();
+            this.NodeRecords[nodeRecord.node.NodeIndex].status = NodeStatus.Closed;
+            this.Open.RemoveFromOpen(nodeRecord);
         }
 
         public void RemoveFromClosed(NodeRecord nodeRecord)
         {
-            //TODO implement
-            throw new NotImplementedException();
+            this.NodeRecords[nodeRecord.node.NodeIndex].status = NodeStatus.Open;
         }
 
         ICollection<NodeRecord> IOpenSet.All()
@@ -126,15 +123,29 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
             return this.Open.All();
         }
 
-        ICollection<NodeRecord> IClosedSet.All()
-        {
-            //this is not efficient, but we just use this method for debug
-            return this.NodeRecords.Where(node => node.status == NodeStatus.Closed).ToList();
-        }
-
         public int CountOpen()
         {
             return this.Open.CountOpen();
+        }
+
+
+        // NotImplemented
+        ICollection<NodeRecord> IClosedSet.All()
+        {
+            List<NodeRecord> NodeList = new List<NodeRecord>();
+
+            //we want this to be very efficient (that's why we use for)
+            for (int i = 0; i < this.NodeRecords.Length; i++)
+            {
+                if (this.NodeRecords[i].status == NodeStatus.Closed)
+                    NodeList.Add(this.NodeRecords[i]);
+            }
+
+            return NodeList;
+        }
+
+        public void Initialize()
+        {
         }
     }
 }

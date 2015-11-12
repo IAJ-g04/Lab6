@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
 {
@@ -17,25 +19,29 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
 
         public void Replace(NodeRecord nodeToBeReplaced, NodeRecord nodeToReplace)
         {
-            this.Open.Remove(nodeToBeReplaced);
-            this.AddToOpen(nodeToReplace);
+            int index = this.Open.BinarySearch(nodeToBeReplaced, this);
+            if (index >= 0)
+            {
+                this.Open[index] = nodeToReplace;
+            }
         }
 
         public NodeRecord GetBestAndRemove()
         {
-            var index = this.Open.Count - 1;
-            var best = this.Open[index];
-            this.Open.RemoveAt(index);
+            var best = this.PeekBest();
+            this.Open.Remove(best);
             return best;
         }
 
         public NodeRecord PeekBest()
         {
-            return this.Open[this.Open.Count-1];
+            return Open[Open.Count-1];
         }
 
         public void AddToOpen(NodeRecord nodeRecord)
         {
+            //a little help here, notice the difference between this method and the one for the LeftPriority list
+            //...this one uses a different comparer with an explicit compare function (which you will have to define below)
             int index = this.Open.BinarySearch(nodeRecord,this);
             if (index < 0)
             {
@@ -50,16 +56,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
 
         public NodeRecord SearchInOpen(NodeRecord nodeRecord)
         {
-            var count = this.Open.Count;
-            for (int i = 0; i < count; i++)
-            {
-                if (this.Open[i].Equals(nodeRecord))
-                {
-
-                    return this.Open[i];
-                }
-            }
-            return null;
+            return this.Open.FirstOrDefault(n => n.Equals(nodeRecord));
         }
 
         public ICollection<NodeRecord> All()
@@ -74,7 +71,12 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
 
         public int Compare(NodeRecord x, NodeRecord y)
         {
-            return y.CompareTo(x);
+            if (x.fValue < y.fValue)
+                return 1;
+            else if (x.fValue > y.fValue)
+                return -1;
+            else
+                return 0;
         }
     }
 }

@@ -8,6 +8,9 @@ using RAIN.Navigation;
 using RAIN.Navigation.NavMesh;
 using UnityEngine;
 using UnityEngine.UI;
+using Assets.Scripts.IAJ.Unity.Movement;
+using Assets.Scripts.IAJ.Unity.Movement.DynamicMovement.Pipeline;
+using Assets.Scripts.IAJ.Unity.Pathfinding.Path;
 
 namespace Assets.Scripts
 {
@@ -29,6 +32,11 @@ namespace Assets.Scripts
         public Text GetRichGoalText;
 
 
+        private AStarPathfinding aStarPathFinding;
+        private GlobalPath currentSolution;
+        private GlobalPath currentSmoothedSolution;
+        private PathfindingDecomposer pathfindingDecomposer;
+
         public Goal RestGoal { get; private set; }
         public Goal SurviveGoal { get; private set; }
         public Goal GetRichGoal { get; private set; }
@@ -42,9 +50,8 @@ namespace Assets.Scripts
 
         //private fields for internal use only
         private NavMeshPathGraph navMesh;
-        private AStarPathfinding aStarPathFinding;
         //private PathFindingDecomposer decomposer;
-        
+
 
         private bool draw;
 
@@ -62,21 +69,7 @@ namespace Assets.Scripts
             this.aStarPathFinding = new NodeArrayAStarPathFinding(this.navMesh, new EuclideanDistanceHeuristic());
             this.aStarPathFinding.NodesPerSearch = 100;
 
-            /*var steeringPipeline = new SteeringPipeline
-            {
-                MaxAcceleration = 40.0f,
-                MaxConstraintSteps = 2,
-                Character = this.Character.KinematicData,
-            };
-
-            this.decomposer = new PathFindingDecomposer(steeringPipeline, this.aStarPathFinding);
-            this.Targeter = new FixedTargeter(steeringPipeline);
-            steeringPipeline.Targeters.Add(this.Targeter);
-            steeringPipeline.Decomposers.Add(this.decomposer);
-            steeringPipeline.Actuator = new FollowPathActuator(steeringPipeline);
-
-            this.Character.Movement = steeringPipeline;
-             * */
+            this.Character.Movement = InitializeSteeringPipeline(this.Character);
 
             //initialization of the GOB decision making
             //let's start by creating 4 main goals
@@ -220,5 +213,49 @@ namespace Assets.Scripts
                 }
             }
         }
+
+        public SteeringPipeline InitializeSteeringPipeline(DynamicCharacter orig)
+        {
+            //Pipeline
+            SteeringPipeline pipe = new SteeringPipeline(orig.KinematicData)
+            {
+                MaxAcceleration = 15.0f
+
+            };
+
+            //Decomposer
+            pathfindingDecomposer = new PathfindingDecomposer()
+            {
+                Graph = this.navMesh,
+                Heuristic = new EuclideanDistanceHeuristic()
+            };
+            pipe.Decomposers.Add(pathfindingDecomposer);
+
+            //Actuator - Default: Car behaviour
+            Actuator actuator = new CarActuator()
+            {
+                MaxAcceleration = 15.0f,
+                Character = orig.KinematicData
+            };
+
+            pipe.Actuator = actuator;
+
+            /*
+            if (orig.GameObject.tag.Equals("Enemies"))
+            {
+                actuator = new TrollActuator()
+                {
+                    MaxAcceleration = 10.0f,
+                    Character = orig.KinematicData
+                };
+            }
+            pipe.Actuator = actuator;
+            */
+
+            return pipe;
+
+        }
+
+
     }
 }

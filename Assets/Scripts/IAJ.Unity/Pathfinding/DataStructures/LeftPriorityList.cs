@@ -1,10 +1,10 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
 {
-    public class LeftPriorityList : IOpenSet
+    public class LeftPriorityList : IOpenSet, IComparer<NodeRecord>
     {
         private List<NodeRecord> Open { get; set; }
 
@@ -19,25 +19,30 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
 
         public void Replace(NodeRecord nodeToBeReplaced, NodeRecord nodeToReplace)
         {
-            this.Open.Remove(nodeToBeReplaced);
-            this.AddToOpen(nodeToReplace);
+            int index = this.Open.BinarySearch(nodeToBeReplaced, this);
+            if (index >= 0)
+            {
+                this.Open[index] = nodeToReplace;
+            }
         }
 
         public NodeRecord GetBestAndRemove()
         {
-            var best = this.Open[0];
-            this.Open.RemoveAt(0);
+            var best = this.PeekBest();
+            this.Open.Remove(best);
             return best;
         }
 
         public NodeRecord PeekBest()
         {
-            return this.Open[0];
+            return Open[0];
         }
 
         public void AddToOpen(NodeRecord nodeRecord)
         {
-            int index = this.Open.BinarySearch(nodeRecord);
+            //a little help here
+            //is very nice that the List<T> already implements a binary search method
+            int index = this.Open.BinarySearch(nodeRecord,this);
             if (index < 0)
             {
                 this.Open.Insert(~index, nodeRecord);
@@ -62,6 +67,16 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
         public int CountOpen()
         {
             return this.Open.Count;
+        }
+
+        public int Compare(NodeRecord x, NodeRecord y)
+        {
+            if (x.fValue < y.fValue)
+                return -1;
+            else if (x.fValue > y.fValue)
+                return 1;
+            else
+                return 0;
         }
     }
 }

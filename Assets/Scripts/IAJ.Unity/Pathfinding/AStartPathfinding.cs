@@ -1,9 +1,9 @@
 ﻿using Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures;
 using Assets.Scripts.IAJ.Unity.Pathfinding.Heuristics;
-using Assets.Scripts.IAJ.Unity.Pathfinding.Path;
 using RAIN.Navigation.Graph;
 using RAIN.Navigation.NavMesh;
 using UnityEngine;
+using Assets.Scripts.IAJ.Unity.Pathfinding.Path;
 
 namespace Assets.Scripts.IAJ.Unity.Pathfinding
 {
@@ -34,7 +34,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
             this.NavMeshGraph = graph;
             this.Open = open;
             this.Closed = closed;
-            this.NodesPerSearch = uint.MaxValue; //by default we process all nodes in a single request
+            this.NodesPerSearch = 120; //by default we process all nodes in a single request
             this.InProgress = false;
             this.Heuristic = heuristic;
         }
@@ -74,90 +74,98 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
             this.Closed.Initialize();
         }
 
-        public virtual bool Search(out GlobalPath solution, bool returnPartialSolution = false)
-        {
-            var startTime = Time.realtimeSinceStartup;
-            var processedNodes = 0;
-            int count;
 
-            while (processedNodes < this.NodesPerSearch)
+        protected virtual void ProcessChildNode(NodeRecord bestNode, NavigationGraphEdge connectionEdge)
+        {
+            var childNodeRecord = GenerateChildNodeRecord(bestNode, connectionEdge);
+            var oldChildNodeOpen = Open.SearchInOpen(childNodeRecord);
+            var oldChildNodeClosed = Closed.SearchInClosed(childNodeRecord);
+
+            if ((oldChildNodeClosed == null) && (oldChildNodeOpen == null))
             {
-                count = this.Open.CountOpen();
-                if (count == 0)
+                Open.AddToOpen(childNodeRecord);
+            }
+            else if ((oldChildNodeOpen != null) && oldChildNodeOpen.fValue > childNodeRecord.fValue)
+            {
+                Open.Replace(oldChildNodeOpen, childNodeRecord);
+
+            }
+            else if ((oldChildNodeClosed != null) && oldChildNodeClosed.fValue > childNodeRecord.fValue)
+            {
+                Closed.RemoveFromClosed(oldChildNodeClosed);
+                Open.AddToOpen(childNodeRecord);
+            }
+
+        }
+
+        public bool Search(out GlobalPath solution, bool returnPartialSolution = false)
+        {
+            var time = UnityEngine.Time.realtimeSinceStartup;
+            var nodesprocessed = 0;
+            var maximumOpen = 0;
+            
+
+
+            //to determine the connections of the selected nodeRecord you need to look at the NavigationGraphNode' EdgeOut  list
+            //something like this
+
+            while (true)
+            {
+                if (Open.CountOpen() > maximumOpen) maximumOpen = Open.CountOpen();
+
+                if (Open.CountOpen() == 0)
+                {
+                    solution = null;
+                    InProgress = false;
+                    TotalProcessedNodes += (uint)nodesprocessed;
+                    TotalProcessingTime = UnityEngine.Time.realtimeSinceStartup - time;
+                    MaxOpenNodes = maximumOpen;
+                    return true;
+                }
+
+                NodeRecord bestNode = Open.GetBestAndRemove();
+
+                if (nodesprocessed > NodesPerSearch)
+                {
+                    if (returnPartialSolution)
+                        solution = CalculateSolution(bestNode, returnPartialSolution);
+                    else
+                        solution = null;
+                    InProgress = true;
+                    TotalProcessedNodes += (uint)nodesprocessed;
+                    TotalProcessingTime = UnityEngine.Time.realtimeSinceStartup - time;
+                    MaxOpenNodes = maximumOpen;
+                    return false;
+                }
+                
+
+                if (bestNode.node == GoalNode)
                 {
                     
-                    solution = null;
-                    this.InProgress = false;
-                    this.CleanUp();
-                    this.TotalProcessingTime += Time.realtimeSinceStartup - startTime;
+                    solution = CalculateSolution(bestNode, false);
+                    InProgress = false;
+                    TotalProcessedNodes += (uint)nodesprocessed;
+                    TotalProcessingTime = UnityEngine.Time.realtimeSinceStartup - time;
+                    MaxOpenNodes = maximumOpen;
                     return true;
                 }
 
-                if (count > this.MaxOpenNodes)
-                {
-                    this.MaxOpenNodes = count;
-                }
+                Closed.AddToClosed(bestNode);
+                nodesprocessed++;
 
-                var bestNode = this.Open.GetBestAndRemove();
 
-                //goal node found, return the shortest Path
-                if (bestNode.node == this.GoalNode)
-                {
-                    solution = this.CalculateSolution(bestNode, false);
-                    this.InProgress = false;
-                    this.CleanUp();
-                    this.TotalProcessingTime += Time.realtimeSinceStartup - startTime;
-                    return true;
-                }
-
-                this.Closed.AddToClosed(bestNode);
-                processedNodes++;
-                this.TotalProcessedNodes++;
-
+                //
+                //TODO put your code here  
+                //or if you would like, you can change just these lines of code this in the original A* Pathfinding Base Class, 
+                //create a ProcessChildNode method in the base class with the code from the previous A* algorithm.
+                //if you do this, then you don't need to implement this search method method. Just delete this and don't forget to override the ProcessChildMethod if you do this
                 var outConnections = bestNode.node.OutEdgeCount;
                 for (int i = 0; i < outConnections; i++)
                 {
-                    var childNode = GenerateChildNodeRecord(bestNode, bestNode.node.EdgeOut(i));
-                    var closedSearch = this.Closed.SearchInClosed(childNode);
-                    if (closedSearch != null) continue;
-
-                    var openSearch = this.Open.SearchInOpen(childNode);
-                    if (openSearch != null)
-                    {
-                        if (childNode.fValue <= openSearch.fValue)
-                        {
-                            this.Open.Replace(openSearch, childNode);    
-                        }
-                    }
-                    else
-                    {
-                        this.Open.AddToOpen(childNode);
-                    }
+                    this.ProcessChildNode(bestNode, bestNode.node.EdgeOut(i));
                 }
+                
             }
-
-            this.TotalProcessingTime += Time.realtimeSinceStartup - startTime;
-
-            //this is very unlikely but it might happen that we process all nodes alowed in this cycle but there are no more nodes to process
-            if (this.Open.CountOpen() == 0)
-            {
-                solution = null;
-                this.InProgress = false;
-                this.CleanUp();
-                return true;
-            }
-
-            //if the caller wants create a partial Path to reach the current best node so far
-            if (returnPartialSolution)
-            {
-                var bestNodeSoFar = this.Open.PeekBest();
-                solution = this.CalculateSolution(bestNodeSoFar, true);
-            }
-            else
-            {
-                solution = null;
-            }
-            return false;
         }
 
         protected NavigationGraphNode Quantize(Vector3 position)
@@ -186,7 +194,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
             {
                 node = childNode,
                 parent = parent,
-                gValue = parent.gValue + (childNode.LocalPosition-parent.node.LocalPosition).magnitude,
+                gValue = parent.gValue + connectionEdge.Cost,
                 hValue = this.Heuristic.H(childNode, this.GoalNode)
             };
 
@@ -203,6 +211,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
             };
             var currentNode = node;
 
+            
             path.PathPositions.Add(this.GoalPosition);
 
             //I need to remove the first Node and the last Node because they correspond to the dummy first and last Polygons that were created by the initialization.
@@ -226,7 +235,6 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
             path.PathNodes.Reverse();
             path.PathPositions.Reverse();
             return path;
-
         }
 
         public static float F(NodeRecord node)

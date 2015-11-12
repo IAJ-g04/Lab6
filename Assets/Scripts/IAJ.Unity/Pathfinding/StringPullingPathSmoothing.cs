@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Linq;
 using Assets.Scripts.IAJ.Unity.Movement;
 using Assets.Scripts.IAJ.Unity.Pathfinding.Path;
-using Assets.Scripts.IAJ.Unity.Utils;
 using RAIN.Navigation.NavMesh;
+using Assets.Scripts.IAJ.Unity.Utils;
 using UnityEngine;
 
 namespace Assets.Scripts.IAJ.Unity.Pathfinding
@@ -19,18 +18,43 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
         /// <returns></returns>
         public static GlobalPath SmoothPath(KinematicData data, GlobalPath globalPath)
         {
-            NavMeshEdge edge;
-            var lookAhead = 3;
-            Vector3 lookAheadTarget;
+
+            if (globalPath.PathNodes.Count <= 2)
+                return globalPath;
 
             var smoothedPath = new GlobalPath
             {
                 IsPartial = globalPath.IsPartial
             };
 
-            //we will string pull from the begginning to the end
-            //TODO implement
-            throw new NotImplementedException();
+            globalPath.PathNodes.Reverse();
+            globalPath.PathPositions.Reverse();
+
+            NavMeshEdge goalNode = globalPath.PathNodes[0] as NavMeshEdge;
+            Vector3 pnext = globalPath.PathPositions[0];
+
+            smoothedPath.PathNodes.Add(goalNode);
+            smoothedPath.PathPositions.Add(pnext);
+            
+            globalPath.PathNodes.RemoveAt(0);
+            foreach (var node in globalPath.PathNodes)
+            {
+                NavMeshEdge edge = node as NavMeshEdge;
+                if (edge != null)
+                {
+                    Vector3 point = MathHelper.ClosestPointInLineSegment2ToLineSegment1(data.position, pnext, edge.PointOne, edge.PointTwo, edge.PointOne);
+                    pnext = point;
+                    smoothedPath.PathNodes.Add(node);
+                    smoothedPath.PathPositions.Add(point);
+                }
+
+            }
+
+            globalPath.PathNodes.Reverse();
+            globalPath.PathPositions.Reverse();
+            smoothedPath.PathNodes.Reverse();
+            smoothedPath.PathPositions.Reverse();
+            return smoothedPath;
         }
 
 
