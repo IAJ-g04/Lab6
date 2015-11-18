@@ -15,16 +15,25 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.GOB
         {
             float iv = 0.0f;
             Goal bestg = null;
+            Goal grg = null;
             Action act = null;
             foreach(Goal g in goals)
             {
-                if(g.InsistenceValue > iv)
+                if (g.Name.Equals("GetRich"))
+                {
+                    grg = g;
+                }
+                else if(g.InsistenceValue > iv)
                 {
                     iv = g.InsistenceValue;
                     bestg = g;
                 }
             }
-            foreach(Action a in actions)
+            if (iv < 8.0)
+            {
+                bestg = grg;
+            }
+                foreach (Action a in actions)
             {
                 if (a.Name.Equals(bestg.Name)){
                     act = a;
