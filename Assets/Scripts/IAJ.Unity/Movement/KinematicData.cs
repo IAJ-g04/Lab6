@@ -9,6 +9,8 @@ namespace Assets.Scripts.IAJ.Unity.Movement
         public Vector3 velocity;
         public float rotation;
 
+        public Vector3 Position { get; internal set; }
+
         public KinematicData()
         {
             this.velocity = Vector3.zero;
