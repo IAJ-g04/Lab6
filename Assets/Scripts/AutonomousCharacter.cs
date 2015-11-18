@@ -45,13 +45,12 @@ namespace Assets.Scripts
         public List<Action> Actions { get; set; }
         public Action CurrentAction { get; private set; }
         public DynamicCharacter Character { get; private set; }
-        //public FixedTargeter Targeter { get; set; }
+        public FixedTargeter Targeter { get; set; }
 
 
         //private fields for internal use only
         private NavMeshPathGraph navMesh;
         //private PathFindingDecomposer decomposer;
-
 
         private bool draw;
 
@@ -222,6 +221,10 @@ namespace Assets.Scripts
                 MaxAcceleration = 15.0f
 
             };
+
+            //Targeter
+          //  Targeter FixedTargeter = new FixedTargeter();
+            //pipe.Targeters.Add(FixedTargeter);
 
             //Decomposer
             pathfindingDecomposer = new PathfindingDecomposer()
