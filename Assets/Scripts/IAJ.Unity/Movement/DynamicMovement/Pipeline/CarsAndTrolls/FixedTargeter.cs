@@ -22,7 +22,7 @@ namespace Assets.Scripts.IAJ.Unity.Movement.DynamicMovement.Pipeline
             if (!this.hasTarget)
                 return new TargetGoal();
             
-            TargetGoal g = new TargetGoal() { Position = Target.Position };
+            TargetGoal g = new TargetGoal() { position = this.Target.position };
             g.hasPosition = true;
             
             return g;
@@ -30,7 +30,7 @@ namespace Assets.Scripts.IAJ.Unity.Movement.DynamicMovement.Pipeline
         
         public void UpdateTarget (Vector3 target)
         {
-            this.Target.Position = target;
+            this.Target.position = target;
             this.hasTarget = true;
         }
 
