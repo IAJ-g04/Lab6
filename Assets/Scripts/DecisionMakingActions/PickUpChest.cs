@@ -18,25 +18,24 @@ namespace Assets.Scripts.DecisionMakingActions
 
         public override float GetDuration()
         {
-            //TODO implement
-            throw new NotImplementedException();
+            return (this.Target.transform.position - this.Character.Character.KinematicData.position).magnitude / 20.0f;
         }
 
         public override float GetGoalChange(Goal goal)
         {
-            //TODO implement
-            throw new NotImplementedException();
+            if (goal.Name == AutonomousCharacter.GET_RICH_GOAL) return -0.5f;
+            return 0.0f;
         }
 
         public override bool CanExecute()
         {
-            //TODO implement
-            throw new NotImplementedException();
+            if (this.Target == null) return false;
+            return true;
         }
 
         public override void Execute()
         {
-            //this.Character.Targeter.Target.Position = this.Target.transform.position;
+            this.Character.Targeter.Target.Position = this.Target.transform.position;
             this.Character.GameManager.PickUpChest(this.Target);
         }
     }
