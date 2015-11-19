@@ -49,13 +49,12 @@ namespace Assets.Scripts.IAJ.Unity.Movement.DynamicMovement.Pipeline
             {
                 g.UpdateChannels(t.GetGoal(Character));
             }
-            
+
             foreach (Decomposer d in Decomposers)
             {
                 g = d.Decompose(Character, g);
             }
-
-            // bool ValidPath = false; TO DO esta parte ta uma bequita meh
+            
 
             for (int i = 0; i <= MaxConstraintSteps; i++)
             {

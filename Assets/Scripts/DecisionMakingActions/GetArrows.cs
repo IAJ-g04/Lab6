@@ -34,13 +34,12 @@ namespace Assets.Scripts.DecisionMakingActions
 
         public override bool CanExecute()
         {
-            //TODO implement
-            throw new NotImplementedException();
+            return false;
         }
 
         public override void Execute()
-        {        
-            this.Character.Targeter.Target.Position = this.Target.transform.position;
+        {
+            this.Character.Targeter.UpdateTarget(Target.transform.position);
             this.Character.GameManager.GetArrows(this.Target);
         }
     }

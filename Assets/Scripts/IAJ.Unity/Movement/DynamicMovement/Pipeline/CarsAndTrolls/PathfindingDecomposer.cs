@@ -26,9 +26,9 @@ namespace Assets.Scripts.IAJ.Unity.Movement.DynamicMovement.Pipeline
         public override TargetGoal Decompose (KinematicData character, TargetGoal goal)
         {
             if (!goal.hasPosition)
-                return goal;
+                return new TargetGoal();
 
-            if(Astar == null) { 
+            if (Astar == null) { 
                 Astar = new NodeArrayAStarPathFinding(Graph, Heuristic);
                 Astar.InitializePathfindingSearch(character.position, goal.position);
                 CurrentParam = 0.0f;

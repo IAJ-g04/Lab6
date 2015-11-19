@@ -35,7 +35,8 @@ namespace Assets.Scripts.DecisionMakingActions
 
         public override void Execute()
         {
-            this.Character.Targeter.Target.Position = this.Target.transform.position;
+            Debug.Log("Chest " + Target.transform.position);
+            this.Character.Targeter.UpdateTarget(Target.transform.position);
             this.Character.GameManager.PickUpChest(this.Target);
         }
     }

@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts.IAJ.Unity.DecisionMaking.GOB;
+using UnityEngine;
 
 namespace Assets.Scripts.DecisionMakingActions
 {
@@ -29,6 +30,8 @@ namespace Assets.Scripts.DecisionMakingActions
 
         public override void Execute()
         {
+            Debug.Log("Rest");
+            this.Character.Targeter.RemoveTarget();
             this.Character.GameManager.Rest();
         }
     }

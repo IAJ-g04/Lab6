@@ -43,8 +43,8 @@ namespace Assets.Scripts.DecisionMakingActions
         }
         public override void Execute()
         {
-            //uncomment this after you implement the targeter
-            //this.Character.Targeter.Target.Position = this.Target.transform.position;
+            Debug.Log("Melee " + Target.transform.position);
+            this.Character.Targeter.UpdateTarget(Target.transform.position);
             this.Character.GameManager.MeleeAttack(this.Target);
         }
     }

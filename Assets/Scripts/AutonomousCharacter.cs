@@ -65,10 +65,10 @@ namespace Assets.Scripts
 
 
             //initialization of the movement algorithms
-            this.aStarPathFinding = new NodeArrayAStarPathFinding(this.navMesh, new EuclideanDistanceHeuristic());
-            this.aStarPathFinding.NodesPerSearch = 100;
+           // this.aStarPathFinding = new NodeArrayAStarPathFinding(this.navMesh, new EuclideanDistanceHeuristic());
+            //this.aStarPathFinding.NodesPerSearch = 100;
 
-            this.Character.Movement = InitializeSteeringPipeline(this.Character);
+            
 
             //initialization of the GOB decision making
             //let's start by creating 4 main goals
@@ -117,6 +117,8 @@ namespace Assets.Scripts
                 this.Actions.Add(new MeleeAttack(this, boar));
                 this.Actions.Add(new Shoot(this, boar));
             }
+
+            this.Character.Movement = InitializeSteeringPipeline(this.Character);
         }
 
         void Update()
@@ -223,8 +225,8 @@ namespace Assets.Scripts
             };
 
             //Targeter
-          //  Targeter FixedTargeter = new FixedTargeter();
-            //pipe.Targeters.Add(FixedTargeter);
+            this.Targeter = new FixedTargeter();
+            pipe.Targeters.Add(this.Targeter);
 
             //Decomposer
             pathfindingDecomposer = new PathfindingDecomposer()
