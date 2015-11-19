@@ -7,8 +7,19 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.GOB
     {
         public static float CalculateDiscontentment(Action action, List<Goal> goals)
         {
-            //TODO implement
-            throw new NotImplementedException();
+            float discontentment = 0.0f;
+            float newValue = 0.0f;
+            foreach (Goal g in goals)
+            {
+                newValue = g.InsistenceValue + action.GetGoalChange(g);
+                discontentment += g.GetDiscontentment(newValue);
+            }
+            return discontentment;
+        } 
+
+
+
+
         }
 
         public static Action ChooseAction(List<Action> actions, List<Goal> goals)
