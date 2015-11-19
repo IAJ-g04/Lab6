@@ -82,14 +82,14 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Path
 
             float pathDistance = Vector3.Distance(path.EndPosition, path.StartPosition);
             float relativePathDistance = pathDistance / this.PathDistance;
-            Debug.Log(relativePathDistance);
+           // Debug.Log(relativePathDistance);
 
             if (relativePathDistance < 0.01f)
                 return 1.0f - (i - previousParam);
 
             return 0.2f + relativePathDistance;
 
-            return 0.2f;
+          //  return 0.2f;
         }
     }
 }

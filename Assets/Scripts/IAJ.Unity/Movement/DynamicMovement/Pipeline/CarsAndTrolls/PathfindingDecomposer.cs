@@ -16,8 +16,8 @@ namespace Assets.Scripts.IAJ.Unity.Movement.DynamicMovement.Pipeline
         public NodeArrayAStarPathFinding Astar { get; set; }
         public GlobalPath AStarSolution { get; set; }
         public float CurrentParam  {get;set;}
+        public TargetGoal lastGoal { get; set; }       
         
-
         public PathfindingDecomposer()
         {
             CurrentParam = 0.0f;
@@ -28,10 +28,11 @@ namespace Assets.Scripts.IAJ.Unity.Movement.DynamicMovement.Pipeline
             if (!goal.hasPosition)
                 return new TargetGoal();
 
-            if (Astar == null) { 
+            if (lastGoal == null || !lastGoal.position.Equals(goal.position)) { 
                 Astar = new NodeArrayAStarPathFinding(Graph, Heuristic);
                 Astar.InitializePathfindingSearch(character.position, goal.position);
                 CurrentParam = 0.0f;
+                this.lastGoal = goal;
             }
             
 

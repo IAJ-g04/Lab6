@@ -43,7 +43,6 @@ namespace Assets.Scripts.DecisionMakingActions
         }
         public override void Execute()
         {
-            Debug.Log("Melee " + Target.transform.position);
             this.Character.Targeter.UpdateTarget(Target.transform.position);
             this.Character.GameManager.MeleeAttack(this.Target);
         }
