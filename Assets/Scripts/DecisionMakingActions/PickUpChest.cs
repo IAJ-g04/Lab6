@@ -29,7 +29,7 @@ namespace Assets.Scripts.DecisionMakingActions
                 var distance =
                     (this.Target.transform.position - this.Character.Character.KinematicData.position).magnitude;
                 //0.5 for the attack action and +0.01 * distance because of the walk 
-                return 0.5f + distance * 0.01f;
+                return distance * 0.01f;
             }
             return 0.0f;
         }
