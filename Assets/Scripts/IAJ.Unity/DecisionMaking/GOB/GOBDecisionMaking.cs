@@ -35,7 +35,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.GOB
             }
                 foreach (Action a in actions)
             {
-                if (a.Name.Equals(bestg.Name)){
+                if (a.Name.Contains("PickUpChest")){
                     act = a;
                 }
             }
